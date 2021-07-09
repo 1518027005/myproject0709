@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <button id="btn">点我获取定位</button>
+    <script>
+        btn.onclick=function(){
+            // 获取当前定位
+            let geoloc = window.navigator.geolocation;
+            geoloc.getCurrentPosition(
+                (msg)=>{ console.log(msg) },  //定位成功时回调
+                (msg)=>{ console.log('失败',msg) },  //定位失败时回调
+                {timeout:5000}      //定位选项配置 timeout：5秒超时
+            );
+        }
+    </script>
+</body>
+</html>

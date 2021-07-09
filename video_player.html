@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="./assets/moment.js"></script>
+    <title>video_player.html</title>
+    <style>
+      .container {
+        width: 500px;
+        border: 1px solid #ddd;
+        text-align: center;
+        padding-bottom: 10px;
+      }
+      .container p{
+        font-size: 1.3em;
+        font-weight: bold;
+        text-align: center;
+      }
+      .container img{
+        width: 340px;
+        height: 340px;
+        border-radius: 50%;
+      }
+      .container input{
+        width: 340px;
+        display: block;
+        margin: 10px auto;
+      }
+      .container .time{
+        width: 340px;
+        height: 30px;
+        margin: 0px auto;
+      }
+      .container .time .left{
+        float: left;
+      }
+      .container .time .right{
+        float: right;
+      }
+      canvas{
+        width: 640px;
+        height: 360px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        /* background-color: red; */
+      }
+      .container{
+        position: relative;
+      }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <video src="assets/let_it_go.mp4" width="640" height="360" style="background-color:black;" id="video"></video>
+
+        <canvas id="canvas" width="640" height="360"></canvas>
+
+
+        <input id="range" type="range" min="0" value="0" max="100">
+        <div class="time">
+          <span class="left">00:00</span>
+          <span class="right">00:00</span>
+        </div>
+        
+        <button id="btn_play">播放/暂停</button>
+        <button id="btn_vp">音量+</button>
+        <button id="btn_vm">音量-</button>
+        <button id="btn_05">0.5倍速</button>
+        <button id="btn_1">1倍速</button>
+        <button id="btn_2">2倍速</button>
+        <button id="btn_pc">全屏显示</button>
+        <input type="text" id="input" placeholder="填写弹幕内容">
+        <button id="send">发送</button>
+      </div>
+      <script>
+
+        
+        // 存储所有弹幕对象
+        let dmlist = [];
+        let ctx  = canvas.getContext('2d');
+        
+
+        // 启用一个定时器，每秒60帧 重绘UI
+       function step(){
+        ctx.clearRect(0,0,640,360);
+          // 遍历
+          dmlist.forEach(item=>{
+            // item:弹幕对象
+           // let r = Math.floor(Math.random()*256);
+          // let g = Math.floor(Math.random()*256);
+          // let b = Math.floor(Math.random()*256)
+          // ctx.fillStyle=`rgb(${r},${g},${b})`;
+            ctx.fillStyle='white';
+            ctx.font='20px 微软雅黑';
+            item.x--;
+            ctx.fillText(item.content,item.x,item.y)
+          })
+          window.requestAnimationFrame(step);
+       }
+       window.requestAnimationFrame(step);
+
+        // 发送弹幕
+        send.addEventListener('click',()=>{
+          let content = input.value;//id为input的文本框内容
+          // 封装为弹幕对象,存入dmlist
+          dmlist.push({
+            content:content,
+            x:600,
+            y:Math.floor(Math.random()*340)
+          })
+          // console.log(dmlist);
+          input.value='';
+
+          // console.log(content);
+        })
+
+        // 创建一个音频播放器
+        let player = document.getElementById('video');
+        // 全屏显示
+        btn_pc.addEventListener('click',()=>{
+          player.requestFullscreen()
+        })
+    
+        // 当拖拽进度条后，从拖拽结束位置继续播放
+        range.addEventListener("change",()=>{
+          player.currentTime = range.value;
+        })
+       
+        //资源加载完成后更新总时长
+        player.addEventListener('loadedmetadata',()=>{
+          var right = document.getElementsByClassName('right')[0];
+          var rr=moment.unix(player.duration).format('mm:ss');
+          right.innerHTML=rr;
+        })
+        // 处理进度条
+        // 在音乐播放过程中捕获持续触发的timeupdate事件
+        player.addEventListener('timeupdate',()=>{
+          // console.log('timeupdate...');
+          // 设置range的max min value 
+          range.max = player.duration;
+          range.value = player.currentTime;
+          // 处理时间文本内容  使用momentjs转换字符串
+          var left = document.getElementsByClassName('left')[0];
+          var ll=moment.unix(player.currentTime).format('mm:ss');
+          
+          left.innerHTML=ll;
+          
+    
+        })
+    
+        // 设置倍速播放
+        btn_05.addEventListener('click',()=>{
+          player.playbackRate = 0.5;
+          console.log(player.playbackRate)
+        })
+    
+        // 修改音量
+        btn_vp.addEventListener('click',()=>{
+          player.volume = Math.min(1,player.volume+0.1)
+          console.log(player.volume)
+        })
+        btn_vm.addEventListener('click',()=>{
+          player.volume = Math.max(0,player.volume-0.1)
+          console.log(player.volume)
+        })
+    
+        // 直接访问btn_play,就可以找到id=btn_play
+        btn_play.addEventListener('click',()=>{
+          if(player.paused){
+            player.play();
+          }else{
+            player.pause()
+          }
+        })
+      </script>
+</body>
+</html>
